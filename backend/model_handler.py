@@ -14,11 +14,10 @@ load_dotenv()
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "mistral"
 PARSED_FILE = "parsed/latest.json"
-MAX_HISTORY = 5
 
 class ModelHandler:
     def __init__(self):
-        self.chat_history = []  # {"role": "user"/"assistant", "content": "..."} formatında tutulur
+        self.chat_history = []
 
     def process_text(self, text: str) -> str:
         try:
@@ -26,10 +25,10 @@ class ModelHandler:
 
             # Eğer analiz et komutu varsa JSON'dan analizleri al
             json_analysis = ""
-            if "analiz et" in text.lower():
+            if "analiz et" in text.lower() or "analyze" in text.lower():
                 json_analysis = analyze_latest_json()
 
-            # Prompt'u oluştur (dil tespiti içerir)
+            # Prompt oluştur
             prompt = build_prompt(text, analyzed_data=json_analysis)
 
             # Ollama'ya istek gönder
@@ -43,7 +42,6 @@ class ModelHandler:
                 output = response.json()["response"]
                 logger.info(f"Oluşturulan yanıt: {output}")
 
-                # Mesaj geçmişini güncelle
                 self.chat_history.append({"role": "user", "content": text})
                 self.chat_history.append({"role": "assistant", "content": output})
 
