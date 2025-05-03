@@ -26,7 +26,7 @@ const ChatPage: React.FC = () => {
     if (analysisResult) {
       setMessages([
         {
-          text: `Pdf yüklendi: ${analysisResult.fileName}`,
+          text: "Merhaba, test sonucunuz yüklendi. Bugün size nasıl yardımcı olabilirim?",
           isUser: false,
         },
       ]);

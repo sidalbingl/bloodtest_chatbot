@@ -68,7 +68,10 @@ async def upload_file(file: UploadFile = File(...)):
             summary=summary
         )
         analysis_history.append(result)
-        return result
+        return {
+            "result": result,
+            "message": "Merhaba, test sonucunuz yüklendi. Bugün size nasıl yardımcı olabilirim?"
+        }
     except Exception as e:
         print(f"Upload error: {str(e)}")
         raise HTTPException(status_code=500, detail="PDF yükleme ve analiz sırasında bir hata oluştu.")

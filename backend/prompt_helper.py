@@ -1,9 +1,6 @@
 import re
 
 def detect_language(text: str) -> str:
-    """
-    Kullanıcının girdiği metnin dilini belirler (basit kontrol).
-    """
     turkish_keywords = ["merhaba", "analiz", "değer", "yüksek", "düşük", "sonuç", "nedir", "lütfen"]
     if any(word in text.lower() for word in turkish_keywords):
         return "tr"
@@ -14,47 +11,45 @@ def build_prompt(user_input: str, analyzed_data: str = "") -> str:
 
     if lang == "tr":
         base_instruction = (
-            "Sen bir yapay zeka destekli tıbbi asistanısın. "
-            "Kullanıcının son kan tahliline göre sadece mevcut test sonuçlarını değerlendir. "
-            "Veri bulunmayan testler hakkında yorum yapma ve uydurma bilgi verme. "
-            "Eğer önemli eksik test varsa, yalnızca testin yapılmasını öner.\n\n"
+            "Sen bir yapay zeka destekli tıbbi asistansın. "
+            "Lütfen yalnızca açık, kısa ve öz cümlelerle cevap ver. "
+            "Gereksiz tekrar yapma. Anlatım halk diliyle sade olsun. "
+            "Tıbbi analizde sadece mevcut değerlere göre konuş. "
+            "Eksik testler hakkında yorum yapma, sadece 'test sonucu yok' de.\n\n"
         )
         if "analiz et" in user_input.lower():
             return (
                 base_instruction +
-                "Kullanıcının kan tahlil sonuçları aşağıda yer almaktadır:\n" +
+                "Kullanıcının kan tahlili sonuçları:\n" +
                 analyzed_data +
-                "\n\nLütfen sadece yüksek ya da düşük sonuçlara odaklan. "
-                "Her anormal sonuç için kısa ve halkın anlayacağı şekilde açıklama yap. "
-                "Referans aralıklarına göre değerlendir. "
-                "Test sonucu eksikse yorum yapma."
+                "\n\nYalnızca yüksek veya düşük değerlere kısa açıklama yap. "
+                "Her madde tek satır olmalı. Örneğin: 'Glukoz: Yüksek Normal aralık bu olmalı ancak sizin değeriniz şu kadar'"
             )
         return (
             base_instruction +
-            f"Kullanıcının sorusu: {user_input}\n"
-            "Soru kan tahliliyle ilgiliyse mevcut verileri kullanarak yorum yap. "
-            "Eğer test sonucu eksikse belirt ama yorum yapma. "
-            "Soru farklı bir konudaysa sadece genel sağlık bilgisiyle cevapla."
+            f"Soru: {user_input}\n"
+            "Soruda geçen test değerleri sadece varsa analiz et. Her açıklama kısa, net ve anlaşılır olmalı. "
+            "Genel yorum yapma, sadece ilgili veriye cevap ver."
         )
     
-    else:  # English prompt
+    else:
         base_instruction = (
-            "You are a medical assistant powered by AI. "
-            "Evaluate only the available test results from the user's latest blood test. "
-            "Do not invent or assume values. "
-            "If an important test is missing, only recommend doing the test.\n\n"
+            "You are an AI-powered medical assistant. "
+            "Please reply only with short, clear, and direct sentences. "
+            "Avoid unnecessary elaboration. Use plain English. "
+            "Only discuss existing values. Do not speculate about missing ones.\n\n"
         )
         if "analyze" in user_input.lower():
             return (
                 base_instruction +
                 "User's blood test results:\n" +
                 analyzed_data +
-                "\n\nPlease focus only on abnormal (high or low) values. "
-                "Explain briefly in simple language for each abnormal result."
+                "\n\nFocus only on abnormal values. Respond with brief explanations like: "
+                "'1. Glucose: High – Possible reason: insulin resistance.'"
             )
         return (
             base_instruction +
             f"User question: {user_input}\n"
-            "If the question is about lab results, use the data provided. "
-            "If it's about general health, give a helpful medical response accordingly."
+            "Answer only based on available test data. Keep your response short and simple. "
+            "Do not provide general or unrelated information."
         )
