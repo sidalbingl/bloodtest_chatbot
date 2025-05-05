@@ -41,22 +41,27 @@ const UploadPage: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 2,
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f5f5f5',
         p: 3,
       }}
     >
       {error && (
-        <Alert severity="error" onClose={() => setError(null)}>
+        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      <Card sx={{ maxWidth: 600, width: '100%' }}>
+      <Card sx={{ maxWidth: 600, width: '100%', boxShadow: 3 }}>
         <CardContent>
-          <Typography variant="h5" component="h2" gutterBottom align="center">
-            Kan Testi Sonuçlarını Yükle
-          </Typography>
-          <Typography variant="body1" color="textSecondary" paragraph align="center">
-            PDF formatındaki kan testi sonuçlarınızı yükleyin ve analiz edin.
+          <Typography
+            variant="h4"
+            component="h2"
+            gutterBottom
+            align="center"
+            sx={{ color: '#B22222' }}
+          >
+            Kan Testi sonuçlarınızı PDF formatında yükleyiniz
           </Typography>
           <Box
             sx={{
@@ -80,6 +85,10 @@ const UploadPage: React.FC = () => {
                 component="span"
                 startIcon={<CloudUploadIcon />}
                 disabled={isUploading}
+                sx={{
+                  backgroundColor: '#B22222',
+                  '&:hover': { backgroundColor: '#A52A2A' },
+                }}
               >
                 {isUploading ? (
                   <CircularProgress size={24} color="inherit" />
@@ -95,4 +104,4 @@ const UploadPage: React.FC = () => {
   );
 };
 
-export default UploadPage; 
+export default UploadPage;

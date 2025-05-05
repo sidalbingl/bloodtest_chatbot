@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend")
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -70,7 +73,7 @@ async def upload_file(file: UploadFile = File(...)):
         analysis_history.append(result)
         return {
             "result": result,
-            "message": "Merhaba, test sonucunuz yüklendi. Bugün size nasıl yardımcı olabilirim?"
+            "message": "Merhaba, test sonucunuz yüklendi. Test Sonuçlarınızı görmek ister misiniz?"
         }
     except Exception as e:
         print(f"Upload error: {str(e)}")
