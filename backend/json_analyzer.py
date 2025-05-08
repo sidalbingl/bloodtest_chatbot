@@ -1,9 +1,21 @@
 import json
 import os
 import re
+import unicodedata
 
 PARSED_FILE = "parsed/latest.json"
-ADVICE_FILE = "backend/advice_dataset.json"
+
+def normalize(text):
+    if not isinstance(text, str):
+        return ""
+    text = text.strip().lower()
+    text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
+    text = text.replace("\n", " ")
+    text = text.replace("(", "").replace(")", "")
+    text = text.replace("serum/plazma", "")
+    text = re.sub(r"\b00\b", "", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 def analyze_latest_json():
     if not os.path.exists(PARSED_FILE):
@@ -12,55 +24,37 @@ def analyze_latest_json():
     with open(PARSED_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    advice_data = []
-    if os.path.exists(ADVICE_FILE):
-        with open(ADVICE_FILE, "r", encoding="utf-8") as af:
-            advice_data = json.load(af)
-
     lines = []
     index = 1
 
     for test, info in data.items():
         try:
-            value = float(info["value"])
-            ref = info.get("ref", "")
+            value_raw = str(info.get("value", "")).replace(",", ".").strip()
+            value = float(re.findall(r"[-+]?[0-9]*\.?[0-9]+", value_raw)[0])
+
+            ref = info.get("ref", "").strip()
             unit = info.get("unit", "")
 
             match = re.match(r"(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)", ref)
-            if match:
-                ref_low = float(match.group(1))
-                ref_high = float(match.group(2))
-                durum = None
+            if not match:
+                continue
 
-                if value < ref_low:
-                    durum = "Düşük"
-                    durum_emoji = "🔻"
-                elif value > ref_high:
-                    durum = "Yüksek"
-                    durum_emoji = "🔺"
-                else:
-                    continue
+            ref_low = float(match.group(1))
+            ref_high = float(match.group(2))
 
-                # Öneri veri setinden eşleşen açıklama ve öneri bul
-                matched_advice = next(
-                    (item for item in advice_data if item["tahlil_adi"].strip().lower() == test.strip().lower()
-                     and item["durum"].lower() == durum.lower()), None
-                )
+            if value < ref_low:
+                durum = "Düşük"
+                emoji = "🔻"
+            elif value > ref_high:
+                durum = "Yüksek"
+                emoji = "🔺"
+            else:
+                continue
 
-                explanation = matched_advice["aciklama"] if matched_advice else "Açıklama bulunamadı."
-                recommendation = matched_advice["oneri"] if matched_advice else "Öneri bulunamadı."
+            lines.append(f"{index}. {emoji} {test.strip()} - Değer: {value} {unit} - Referans: {ref}")
+            index += 1
 
-                lines.append(
-                    f"{index}. {durum_emoji} {test} - Değer: {value} {unit} - Referans: {ref}\n"
-                    f"   Açıklama: {explanation}\n"
-                    f"   Öneri: {recommendation}"
-                )
-                index += 1
-
-        except Exception as e:
+        except Exception:
             continue
 
-    if not lines:
-        return "Tüm test sonuçları referans aralığında."
-
-    return "🚨 Anormal Test Sonuçları:\n\n" + "\n\n".join(lines)
+    return "🚨 Anormal Test Sonuçları:\n\n" + "\n".join(lines) if lines else "Tüm test sonuçları referans aralığında."

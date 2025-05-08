@@ -13,7 +13,6 @@ load_dotenv()
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "mistral"
-PARSED_FILE = "parsed/latest.json"
 
 class ModelHandler:
     def __init__(self):
@@ -23,35 +22,32 @@ class ModelHandler:
         try:
             logger.info(f"Gelen metin: {text}")
 
-            # Eğer analiz et komutu varsa JSON'dan analizleri al
-            json_analysis = ""
-            if "analiz et" in text.lower() or "analyze" in text.lower():
-                json_analysis = analyze_latest_json()
+            # Analiz et komutu gelirse model kullanmadan direkt sonucu ver
+            if "analiz et" in text.lower():
+                return analyze_latest_json()
 
-            # Prompt oluştur
-            prompt = build_prompt(text, analyzed_data=json_analysis)
+            # Normal prompt işle
+            prompt = build_prompt(text)
+            print("📤 Modele giden prompt:", prompt)
 
-            # Ollama'ya istek gönder
             response = requests.post(OLLAMA_URL, json={
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "temperature": 0.0  # model susturulur
+                }
             })
 
             if response.status_code == 200:
                 output = response.json()["response"]
-                logger.info(f"Oluşturulan yanıt: {output}")
-
                 self.chat_history.append({"role": "user", "content": text})
                 self.chat_history.append({"role": "assistant", "content": output})
-
                 return output.strip()
             else:
-                logger.error(f"API hatası: {response.status_code} - {response.text}")
-                return "Modelden yanıt alınamadı."
+                return f"Modelden yanıt alınamadı: {response.status_code}"
 
         except Exception as e:
-            logger.error(f"Metin işleme hatası: {str(e)}")
             return f"Hata oluştu: {str(e)}"
 
 model_handler = ModelHandler()
