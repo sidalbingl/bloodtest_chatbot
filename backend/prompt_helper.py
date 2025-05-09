@@ -5,32 +5,32 @@ advice_entries = [
     {
         "tahlil": "albumin",
         "durum": "yüksek",
-        "cevap": "Yüksek albümin genellikle vücudun susuz kaldığını gösterir. Su tüketiminizi artırın."
+        "cevap": "Yüksek albümin seviyesi genellikle vücudun susuz kaldığını (dehidrasyon) gösterir. Ayrıca bazı böbrek veya karaciğer problemleriyle de ilişkili olabilir. Günlük su tüketiminizi artırın ve yeterli sıvı aldığınızdan emin olun. Durumun altında yatan başka bir neden olup olmadığını belirlemek için mutlaka doktorunuza danışın."
     },
     {
         "tahlil": "laktat dehidrogenaz",
         "durum": "düşük",
-        "cevap": "Düşük laktat dehidrogenaz nadirdir, test tekrarı veya genetik durumlar için doktor kontrolü önerilir."
+        "cevap": "Düşük laktat dehidrogenaz (LDH) nadir görülür ve çoğunlukla klinik olarak belirgin bir anlam taşımaz. Ancak bazı genetik enzim eksiklikleri veya laboratuvar hataları bu sonuca yol açabilir. Testin tekrarlanması ve uzman görüşü alınması önemlidir. Kesin değerlendirme için doktorunuza başvurun."
     },
     {
         "tahlil": "ldl kolesterol",
         "durum": "düşük",
-        "cevap": "Düşük LDL kolesterol hormonal veya beslenmeye bağlı olabilir. Doktorla değerlendirin."
+        "cevap": "Düşük LDL kolesterol düzeyleri bazı durumlarda olumlu görülse de, aşırı düşüklük hormonal bozukluklar (örneğin tiroit sorunları), yetersiz yağ alımı, emilim bozuklukları veya bazı genetik durumlara bağlı olabilir. Beslenme düzeniniz gözden geçirilmeli ve gerekli görülürse yağ dengesi sağlanmalıdır. Detaylı değerlendirme ve uygun yönlendirme için doktorunuza danışın."
     },
     {
         "tahlil": "hidroksi vitamin d",
         "durum": "düşük",
-        "cevap": "Düşük D vitamini bağışıklık ve kemik sağlığını etkiler. Güneşlenin, takviye alın."
+        "cevap": "Düşük D vitamini seviyesi bağışıklık sistemini zayıflatabilir, kemik sağlığını olumsuz etkileyebilir ve yorgunluk, kas ağrıları gibi semptomlara neden olabilir. Günde 10-15 dakika güneş ışığına maruz kalmak, D vitamini içeren besinler (örneğin yağlı balık, yumurta) tüketmek ve D3 vitamini takviyesi almak faydalı olabilir. Doz ve uygulama süresi kişisel faktörlere göre değişir; bu nedenle mutlaka doktorunuza danışarak hareket edin."
     },
     {
         "tahlil": "pdw",
         "durum": "yüksek",
-        "cevap": "Yüksek PDW inflamasyon göstergesi olabilir. Tam kan sayımı ile birlikte değerlendirilmelidir."
+        "cevap": "Yüksek PDW (Platelet Distribution Width) değeri, trombosit boyutlarında artmış çeşitlilik olduğunu ve olası inflamasyon, enfeksiyon veya bazı hematolojik durumları işaret edebileceğini gösterir. Ancak tek başına tanı koymak için yeterli değildir. Diğer parametrelerle (trombosit sayısı, MPV, CRP, ESR gibi) birlikte değerlendirilmelidir. Net sonuçlar ve doğru yönlendirme için doktor kontrolü şarttır"
     },
     {
         "tahlil": "mcv",
         "durum": "düşük",
-        "cevap": "Düşük MCV değeri genellikle demir eksikliği anemisine işaret eder. Demir takviyesi önerilir."
+        "cevap": "Düşük MCV (Mean Corpuscular Volume), yani kırmızı kan hücrelerinin ortalama hacminin düşük olması genellikle demir eksikliği anemisini gösterir. Bu durumda halsizlik, baş dönmesi, çarpıntı gibi belirtiler görülebilir. Demir içeriği yüksek besinler (örneğin kırmızı et, yeşil yapraklı sebzeler) tüketilmeli ve gerekirse demir takviyesi alınmalıdır. Tedaviye başlamadan önce mutlaka doktorunuza danışın."
     }
 ]
 
@@ -52,7 +52,7 @@ def build_prompt(user_input: str, analyzed_data: str = "") -> str:
 
     if lang == "tr":
         if "analiz et" in user_input.lower():
-            return analyzed_data  # bu kısmı aynen koruduk ❤️
+            return analyzed_data  
 
         matched = find_response_in_prompt_dataset(user_input)
         if matched:
@@ -60,9 +60,11 @@ def build_prompt(user_input: str, analyzed_data: str = "") -> str:
 
         return (
             f"Kullanıcının sorusu: {user_input}\n"
+            "Sen bir sağlık chatbotusun.Türkçe ve anlaşılır bir şekilde cevap ver. Cevaplarını mümkün olduğunca basit ve net tut. "
             "Eğer analiz edilmiş veri varsa ona dayanarak kısa ve anlaşılır cevap ver. "
-            "Varsa advice_dataset içeriğini kullan. Eksik testler hakkında yorum yapma."
+            "Genelleme yapma, test dışı tahminde bulunma. Eğer değer düşükse neden düşük olabileceğini ve önerileri belirt."
             "Hiçbir ekleme, çıkarma, açıklama, öneri, yorum veya yorumlama yapma. Sadece metni döndür:\n\n{matched}"
+            "Eğer değer yüksekse neden yüksek olabileceğini ve yapılması gerekenleri belirt."
         )
 
     else:
@@ -71,5 +73,8 @@ def build_prompt(user_input: str, analyzed_data: str = "") -> str:
 
         return (
             f"User question: {user_input}\n"
+            "You are a health chatbot. Answer in Turkish and understandable. Keep your answers as simple and clear as possible."
             "Answer briefly and clearly based on available analyzed data. Avoid assumptions."
+            "Answer clearly based on analyzed blood test results if available. "
+            "Explain why values might be high or low and suggest actionable steps."
         )
